@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="jp.co.internous.lion.model.mapper.MstProductMapper">
+
+	<!-- カテゴリが選択され、検索ワードが記入された場合 -->
+	<select id="findByCategoryAndProductName" resultType="jp.co.internous.lion.model.domain.MstProduct">
+	<!-- mst_productテーブルから選択したcategory_idと合致するものを全て抽出 -->
+		SELECT * FROM mst_product WHERE category_id = #{category}
+		
+		AND
+		<!-- keywords配列から値を順に取り出して繰り返し処理をする -->
+		<foreach collection="keywords" item="keyword" 
+		open="(" close=")" index="index" separator="" >
+			
+			<choose>
+			<!-- 一つ目の検索ワードの処理 -->
+				<when test="index == 0">
+					(product_name LIKE '%${keyword}%')
+				</when>
+			<!-- 二つ目以降の検索ワードの場合条件文の前にORをつけて処理 -->
+				<otherwise>
+					OR (product_name LIKE '%${keyword}%')
+				</otherwise>
+			</choose>
+		</foreach>	
+		ORDER BY id;	
+	</select>
+	
+	<!-- カテゴリが未記入で検索ワードだけが記入された場合 -->
+	<select id="findByProductName" resultType="jp.co.internous.lion.model.domain.MstProduct">
+	<!-- mst_productテーブルから全て抽出 -->
+		SELECT * FROM mst_product
+		<!-- keywords配列から値を順に取り出して繰り返し処理をする -->
+		<foreach item="keyword" collection="keywords" open="" close="" index="index" separator="">
+			<choose>
+			<!-- 一つ目の検索ワードの処理 -->
+				<when test="index == 0">
+					WHERE (product_name LIKE '%${keyword}%')
+				</when>
+			<!-- 二つ目以降の検索ワードの場合条件文の前にORをつけて処理 -->
+				<otherwise>
+					OR (product_name LIKE '%${keyword}%')
+				</otherwise>
+			</choose>
+		</foreach>
+		ORDER BY id;
+	</select>
+
+</mapper>
